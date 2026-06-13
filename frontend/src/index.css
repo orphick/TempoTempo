@@ -1,0 +1,93 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-base: #08080f;
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-hover: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(139, 124, 248, 0.45);
+  --glass-glow: rgba(139, 124, 248, 0.12);
+  --accent: #8b7cf8;
+  --accent-hover: #a99ef9;
+  --accent-dim: rgba(139, 124, 248, 0.14);
+  --accent-glow: 0 0 32px rgba(139, 124, 248, 0.25);
+  --text-primary: #f2f2fa;
+  --text-secondary: #8888a0;
+  --text-muted: #48485a;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(139, 124, 248, 0.45);
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.07);
+  --bg-secondary: rgba(255, 255, 255, 0.03);
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "Vazirmatn", system-ui, sans-serif;
+  line-height: 1.7;
+  min-height: 100vh;
+  direction: rtl;
+  background-image:
+    radial-gradient(
+      ellipse 80% 50% at 80% -10%,
+      rgba(99, 82, 220, 0.18) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 10% 90%,
+      rgba(80, 60, 180, 0.12) 0%,
+      transparent 60%
+    );
+  background-attachment: fixed;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: rgba(139, 124, 248, 0.3);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 124, 248, 0.3);
+  border-radius: 3px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
