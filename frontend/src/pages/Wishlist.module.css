@@ -1,0 +1,130 @@
+.page,
+.authState {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 48px 28px 72px;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.hero p,
+.emptyState p,
+.authState p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.countBox {
+  min-width: 170px;
+  padding: 18px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass);
+  text-align: center;
+}
+
+.countBox strong {
+  display: block;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.countBox span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.emptyState,
+.authState {
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.emptyState {
+  min-height: 360px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass);
+  padding: 40px 20px;
+}
+
+.authState {
+  min-height: calc(100vh - 220px);
+}
+
+.emptyIcon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  color: var(--accent);
+  font-size: 42px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(139, 124, 248, 0.24);
+}
+
+.emptyState h2,
+.authState h1 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.emptyState a,
+.authState a {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 24px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .page,
+  .authState {
+    padding: 32px 18px 56px;
+  }
+
+  .hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .countBox {
+    text-align: right;
+  }
+}
