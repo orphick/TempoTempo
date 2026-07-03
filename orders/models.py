@@ -121,7 +121,7 @@ class Coupon(models.Model):
         if self.max_uses > 0 and self.used_count >= self.max_uses:
             return False, 'ظرفیت این کد تخفیف تمام شده است'
         if order_total < self.min_order_amount:
-            return False, f'حداقل مبلغ سفارش برای این کد ${self.min_order_amount} است'
+            return False, f'حداقل مبلغ سفارش برای این کد {self.min_order_amount} تومان است'
         return True, 'valid'
 
     def calculate_discount(self, order_total):

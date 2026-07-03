@@ -1,17 +1,12 @@
-const numberFormatter = new Intl.NumberFormat("fa-IR", {
-  maximumFractionDigits: 2,
-});
-
 const integerFormatter = new Intl.NumberFormat("fa-IR", {
   maximumFractionDigits: 0,
 });
 
-export function formatCurrency(value, fallback = "نامشخص") {
+export function formatCurrency(value, fallback = "\u0646\u0627\u0645\u0634\u062e\u0635") {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return fallback;
 
-  const formatter = Number.isInteger(numeric) ? integerFormatter : numberFormatter;
-  return `${formatter.format(numeric)} دلار`;
+  return `${integerFormatter.format(Math.round(numeric))} \u062a\u0648\u0645\u0627\u0646`;
 }
 
 export function formatNumber(value, fallback = "—") {
