@@ -127,6 +127,8 @@ BLOG_IMAGE_PALETTES = [
     ('#dc2626', '#111827'),
 ]
 
+TOMAN_RATE = Decimal('100000')
+
 
 class Command(BaseCommand):
     help = 'Create demo data for local presentations.'
@@ -561,7 +563,7 @@ class Command(BaseCommand):
                     product=product,
                     name=name,
                     defaults={
-                        'price': Decimal(price),
+                        'price': Decimal(price) * TOMAN_RATE,
                         'stock': stock,
                         'is_active': True,
                     },
@@ -580,7 +582,7 @@ class Command(BaseCommand):
             ('ava.review@tempotempo.test', 'آوا', 'genshin-impact-crystals', 4, 'همه چیز خوب بود. فقط برای بازی‌های این مدلی اگر جای وارد کردن آیدی بازی هم اضافه شود واقعی‌تر می‌شود.'),
             ('mehrdad.review@tempotempo.test', 'مهرداد', 'roblox-gift-card', 3, 'بد نیست، ولی برای روبلاکس دوست داشتم توضیح فعال‌سازی ساده‌تر باشد. خود خرید و سبد خرید مشکلی نداشت.'),
             ('elham.review@tempotempo.test', 'الهام', 'nintendo-eshop-card', 5, 'دسته‌بندی‌ها کمک کرد سریع پیداش کنم. حس فروشگاه کامل‌تری می‌دهد، نه فقط چند محصول نمایشی.'),
-            ('danial.review@tempotempo.test', 'دانیال', 'league-of-legends-rp', 4, 'برای RP خوبه که چند بسته مختلف دارد. اگر قیمت نهایی با تومان هم کنار دلار بود بهتر می‌شد.'),
+            ('danial.review@tempotempo.test', 'دانیال', 'league-of-legends-rp', 4, 'برای RP خوبه که چند بسته مختلف دارد. قیمت نهایی به تومان واضح است و مقایسه بسته‌ها راحت‌تر می‌شود.'),
         ]
 
         for email, username, product_slug, rating, comment in demo_reviews:
@@ -635,7 +637,7 @@ class Command(BaseCommand):
             defaults={
                 'discount_type': 'percentage',
                 'discount_value': Decimal('10.00'),
-                'min_order_amount': Decimal('10.00'),
+                'min_order_amount': Decimal('10.00') * TOMAN_RATE,
                 'max_uses': 100,
                 'is_active': True,
             },

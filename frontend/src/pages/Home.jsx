@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import ProductCard from "../components/ProductCard";
 import { ProductCardSkeleton } from "../components/Skeleton";
+import { formatCurrency } from "../utils/formatters";
 import styles from "./Home.module.css";
 
 const CATEGORY_LABELS = {
@@ -55,14 +56,6 @@ const formatNumber = (value, fallback = "—") => {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
   return new Intl.NumberFormat("fa-IR").format(numeric);
-};
-
-const formatPrice = (price) => {
-  const numeric = Number(price);
-  if (!Number.isFinite(numeric)) return "نامشخص";
-
-  const maximumFractionDigits = Number.isInteger(numeric) ? 0 : 2;
-  return `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits }).format(numeric)} دلار`;
 };
 
 export default function Home() {
@@ -127,7 +120,7 @@ export default function Home() {
 
   const activeHeroProduct = heroProducts[activeHeroIndex % heroProducts.length];
   const heroProductUrl = activeHeroProduct ? `/products/${activeHeroProduct.slug}` : "/shop";
-  const heroPrice = activeHeroProduct ? formatPrice(activeHeroProduct.starting_price) : "نامشخص";
+  const heroPrice = activeHeroProduct ? formatCurrency(activeHeroProduct.starting_price) : "نامشخص";
 
   return (
     <div className={styles.page}>
@@ -282,7 +275,7 @@ export default function Home() {
               >
                 <span>{product.category_name || "محصول دیجیتال"}</span>
                 <strong>{product.name}</strong>
-                <em>از {formatPrice(product.starting_price)}</em>
+                <em>از {formatCurrency(product.starting_price)}</em>
               </Link>
             ))
           ) : (

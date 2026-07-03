@@ -17,7 +17,7 @@ class ProductApiTests(APITestCase):
         ProductVariant.objects.create(
             product=self.product,
             name='10 USD',
-            price=Decimal('10.00'),
+            price=Decimal('1000000.00'),
             stock=5,
             is_active=True,
         )
@@ -34,7 +34,7 @@ class ProductApiTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['slug'], 'steam-wallet')
-        self.assertEqual(Decimal(response.data['results'][0]['starting_price']), Decimal('10.00'))
+        self.assertEqual(Decimal(response.data['results'][0]['starting_price']), Decimal('1000000.00'))
 
     def test_product_list_can_filter_by_category_and_search(self):
         response = self.client.get('/api/products/?category=steam&search=wallet')

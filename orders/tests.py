@@ -27,7 +27,7 @@ class CommerceFlowTests(APITestCase):
         self.variant = ProductVariant.objects.create(
             product=self.product,
             name='10 USD',
-            price=Decimal('10.00'),
+            price=Decimal('1000000.00'),
             stock=3,
             is_active=True,
         )
@@ -57,7 +57,7 @@ class CommerceFlowTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         order = Order.objects.get(user=self.user)
-        self.assertEqual(order.total_price, Decimal('18.00'))
+        self.assertEqual(order.total_price, Decimal('1800000.00'))
         self.assertEqual(order.items.count(), 1)
 
         self.variant.refresh_from_db()
@@ -93,13 +93,13 @@ class CommerceFlowTests(APITestCase):
         order = Order.objects.create(
             user=self.user,
             status='completed',
-            total_price=Decimal('10.00'),
+            total_price=Decimal('1000000.00'),
         )
         OrderItem.objects.create(
             order=order,
             variant=self.variant,
             quantity=1,
-            price=Decimal('10.00'),
+            price=Decimal('1000000.00'),
         )
 
         response = self.client.post(f'/api/reviews/{self.product.id}/', {
