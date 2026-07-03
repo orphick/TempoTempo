@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import useAuthStore from "../store/useAuthStore";
+import { formatCurrency, formatNumber } from "../utils/formatters";
 import styles from "./AdminDashboard.module.css";
 
 const STATUS_MAP = {
@@ -27,7 +28,7 @@ function RevenueChart({ data }) {
       <div className={styles.chartBars}>
         {data.map((item) => (
           <div key={item.month} className={styles.chartColumn}>
-            <span>${Number(item.revenue).toFixed(0)}</span>
+            <span>{formatCurrency(item.revenue)}</span>
             <div
               className={styles.chartBar}
               style={{ height: `${Math.max((item.revenue / max) * 150, 8)}px` }}
@@ -91,23 +92,43 @@ export default function AdminDashboard() {
     return [
       {
         label: "درآمد تکمیل‌شده",
-        value: `$${Number(stats.total_revenue).toFixed(2)}`,
+        value: formatCurrency(stats.total_revenue),
         helper: "فقط سفارش‌های تکمیل‌شده",
       },
       {
         label: "کل سفارش‌ها",
-        value: stats.total_orders,
+        value: formatNumber(stats.total_orders),
         helper: "تمام وضعیت‌ها",
       },
       {
         label: "کاربران",
-        value: stats.total_users,
+        value: formatNumber(stats.total_users),
         helper: "حساب‌های ثبت‌شده",
       },
       {
         label: "محصولات فعال",
-        value: stats.total_products,
+        value: formatNumber(stats.total_products),
         helper: "قابل نمایش در فروشگاه",
+      },
+      {
+        label: "میانگین سفارش",
+        value: formatCurrency(stats.average_order_value),
+        helper: "میانگین سفارش‌های تکمیل‌شده",
+      },
+      {
+        label: "سفارش‌های در جریان",
+        value: formatNumber(stats.pending_orders),
+        helper: "در انتظار یا در حال پردازش",
+      },
+      {
+        label: "گونه‌های کم‌موجودی",
+        value: formatNumber(stats.low_stock_variants),
+        helper: "موجودی ۵ عدد یا کمتر",
+      },
+      {
+        label: "مقاله‌های منتشرشده",
+        value: formatNumber(stats.total_blog_posts),
+        helper: "محتوای فعال بلاگ",
       },
     ];
   }, [stats]);
@@ -116,7 +137,7 @@ export default function AdminDashboard() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.kicker}>Admin</span>
+          <span className={styles.kicker}>مدیریت</span>
           <h1>در حال بارگذاری داشبورد...</h1>
         </section>
       </main>
@@ -127,7 +148,7 @@ export default function AdminDashboard() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.kicker}>Admin</span>
+          <span className={styles.kicker}>مدیریت</span>
           <h1>دریافت اطلاعات داشبورد ممکن نیست</h1>
           <p>لطفاً وضعیت ورود مدیر و اتصال API را بررسی کنید.</p>
         </section>
@@ -139,8 +160,8 @@ export default function AdminDashboard() {
     <main className={styles.wrapper}>
       <section className={styles.hero}>
         <div>
-          <p className={styles.kicker}>Admin Console</p>
-          <h1>داشبورد مدیریت TempoTempo</h1>
+          <p className={styles.kicker}>پنل مدیریت</p>
+          <h1>داشبورد مدیریت تمپوتمپو</h1>
           <p>
             نمای مدیریتی فروشگاه برای بررسی درآمد، سفارش‌ها، کاربران، محصولات و
             تغییر وضعیت سفارش‌ها.
@@ -167,7 +188,7 @@ export default function AdminDashboard() {
         <article className={styles.panel}>
           <div className={styles.panelHeader}>
             <div>
-              <span className={styles.kicker}>Revenue</span>
+              <span className={styles.kicker}>درآمد</span>
               <h2>درآمد ماهانه</h2>
             </div>
           </div>
@@ -177,7 +198,7 @@ export default function AdminDashboard() {
         <article className={styles.panel}>
           <div className={styles.panelHeader}>
             <div>
-              <span className={styles.kicker}>Orders</span>
+              <span className={styles.kicker}>سفارش‌ها</span>
               <h2>وضعیت سفارش‌ها</h2>
             </div>
           </div>
@@ -211,7 +232,7 @@ export default function AdminDashboard() {
       <section className={styles.ordersPanel}>
         <div className={styles.panelHeader}>
           <div>
-            <span className={styles.kicker}>Management</span>
+            <span className={styles.kicker}>مدیریت</span>
             <h2>آخرین سفارش‌ها</h2>
           </div>
           <p>تغییر وضعیت سفارش از همین جدول انجام می‌شود.</p>
@@ -240,7 +261,7 @@ export default function AdminDashboard() {
                     <tr key={order.id}>
                       <td>#{order.id}</td>
                       <td>{order.user_email}</td>
-                      <td>${Number(order.total_price).toFixed(2)}</td>
+                      <td>{formatCurrency(order.total_price)}</td>
                       <td>{order.items_count} آیتم</td>
                       <td>{order.created_at}</td>
                       <td>

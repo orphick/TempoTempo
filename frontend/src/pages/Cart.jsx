@@ -4,6 +4,7 @@ import useAuthStore from "../store/useAuthStore";
 import useCartStore from "../store/useCartStore";
 import useToastStore from "../store/useToastStore";
 import api from "../api/axios";
+import { formatCurrency } from "../utils/formatters";
 import styles from "./Cart.module.css";
 
 const CHECKOUT_STEPS = ["سبد خرید", "تخفیف", "ثبت سفارش"];
@@ -52,7 +53,7 @@ export default function Cart() {
     try {
       const res = await api.post("/coupon/validate/", { code: couponInput });
       setCouponData(res.data);
-      addToast(`کد تخفیف اعمال شد — ${res.data.discount_amount}$ تخفیف`, "success");
+      addToast(`کد تخفیف اعمال شد — ${formatCurrency(res.data.discount_amount)} تخفیف`, "success");
     } catch (err) {
       addToast(err.response?.data?.error || "کد تخفیف معتبر نیست", "error");
       setCouponData(null);
@@ -111,7 +112,7 @@ export default function Cart() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.stateKicker}>Cart Access</span>
+          <span className={styles.stateKicker}>دسترسی سبد خرید</span>
           <h1>برای مشاهده سبد خرید وارد حساب شوید</h1>
           <p>سبد خرید، کد تخفیف و سفارش‌های شما به حساب کاربری متصل هستند.</p>
           <div className={styles.stateActions}>
@@ -127,7 +128,7 @@ export default function Cart() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.stateKicker}>Loading</span>
+          <span className={styles.stateKicker}>در حال بارگذاری</span>
           <h1>در حال آماده‌سازی سبد خرید...</h1>
         </section>
       </main>
@@ -138,7 +139,7 @@ export default function Cart() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.stateKicker}>Empty Cart</span>
+          <span className={styles.stateKicker}>سبد خالی</span>
           <h1>سبد خرید شما خالی است</h1>
           <p>از فروشگاه محصول دلخواه را انتخاب کن و دوباره به این بخش برگرد.</p>
           <div className={styles.stateActions}>
@@ -154,7 +155,7 @@ export default function Cart() {
     <main className={styles.wrapper}>
       <section className={styles.hero}>
         <div>
-          <p className={styles.kicker}>Checkout</p>
+          <p className={styles.kicker}>تسویه حساب</p>
           <h1>سبد خرید و ثبت سفارش</h1>
           <p>محصولات انتخاب‌شده، کد تخفیف و مجموع نهایی را قبل از ثبت سفارش بررسی کن.</p>
         </div>
@@ -164,7 +165,7 @@ export default function Cart() {
             آیتم در سبد
           </span>
           <span>
-            <strong>${totals.finalTotal.toFixed(2)}</strong>
+            <strong>{formatCurrency(totals.finalTotal)}</strong>
             مبلغ نهایی
           </span>
         </div>
@@ -183,7 +184,7 @@ export default function Cart() {
         <div className={styles.itemsPanel}>
           <div className={styles.panelHeader}>
             <div>
-              <span className={styles.kicker}>Items</span>
+              <span className={styles.kicker}>اقلام سفارش</span>
               <h2>محصولات انتخاب‌شده</h2>
             </div>
             <Link to="/shop">افزودن محصول</Link>
@@ -192,10 +193,10 @@ export default function Cart() {
           <div className={styles.itemsList}>
             {cart.items.map((item) => (
               <article key={item.id} className={styles.item}>
-                <div className={styles.itemMark}>TT</div>
+                <div className={styles.itemMark}>کد</div>
                 <div className={styles.itemInfo}>
                   <h3>{item.variant.name}</h3>
-                  <p>${item.variant.price} برای هر عدد</p>
+                  <p>{formatCurrency(item.variant.price)} برای هر عدد</p>
                 </div>
 
                 <div className={styles.qtyControls} aria-label="تغییر تعداد">
@@ -214,7 +215,7 @@ export default function Cart() {
                   </button>
                 </div>
 
-                <strong className={styles.itemPrice}>${item.subtotal}</strong>
+                <strong className={styles.itemPrice}>{formatCurrency(item.subtotal)}</strong>
                 <button
                   className={styles.removeBtn}
                   onClick={() => handleRemove(item.id)}
@@ -229,7 +230,7 @@ export default function Cart() {
 
         <aside className={styles.summary}>
           <div className={styles.summaryHeader}>
-            <span className={styles.kicker}>Summary</span>
+            <span className={styles.kicker}>خلاصه</span>
             <h2>خلاصه سفارش</h2>
           </div>
 
@@ -237,7 +238,7 @@ export default function Cart() {
             {cart.items.map((item) => (
               <div key={item.id} className={styles.summaryRow}>
                 <span>{item.variant.name} × {item.quantity}</span>
-                <strong>${item.subtotal}</strong>
+                <strong>{formatCurrency(item.subtotal)}</strong>
               </div>
             ))}
           </div>
@@ -248,7 +249,7 @@ export default function Cart() {
               <div className={styles.appliedCoupon}>
                 <div>
                   <strong>{couponData.code}</strong>
-                  <span>${totals.discountAmount.toFixed(2)} تخفیف</span>
+                  <span>{formatCurrency(totals.discountAmount)} تخفیف</span>
                 </div>
                 <button onClick={removeCoupon}>حذف</button>
               </div>
@@ -274,17 +275,17 @@ export default function Cart() {
           <div className={styles.totalBox}>
             <div>
               <span>جمع محصولات</span>
-              <strong>${totals.originalTotal.toFixed(2)}</strong>
+              <strong>{formatCurrency(totals.originalTotal)}</strong>
             </div>
             {couponData && (
               <div className={styles.discountRow}>
                 <span>تخفیف</span>
-                <strong>-${totals.discountAmount.toFixed(2)}</strong>
+                <strong>-{formatCurrency(totals.discountAmount)}</strong>
               </div>
             )}
             <div className={styles.finalTotal}>
               <span>مجموع نهایی</span>
-              <strong>${totals.finalTotal.toFixed(2)}</strong>
+              <strong>{formatCurrency(totals.finalTotal)}</strong>
             </div>
           </div>
 

@@ -12,6 +12,7 @@ venv/
 # Django
 staticfiles/
 media/avatars/
+media/blog/
 media/products/
 
 # Environment files

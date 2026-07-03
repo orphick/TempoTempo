@@ -6,6 +6,7 @@ import useCartStore from "../store/useCartStore";
 import useWishlistStore from "../store/useWishlistStore";
 import useToastStore from "../store/useToastStore";
 import ProductCard from "../components/ProductCard";
+import { formatCurrency } from "../utils/formatters";
 import styles from "./ProductDetail.module.css";
 
 const ACTIVATION_STEPS = [
@@ -156,6 +157,13 @@ export default function ProductDetail() {
   }
   if (!product) return null;
 
+  const descriptionParagraphs = product.description
+    ? product.description
+        .split(/\n{2,}/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+    : [];
+
   const activeVariants = product.variants.filter((v) => v.is_active);
   const inStock = selectedVariant?.stock > 0;
   const wishlisted = isWishlisted(product.id);
@@ -186,7 +194,7 @@ export default function ProductDetail() {
             {product.image ? (
               <img src={product.image} alt={product.name} />
             ) : (
-              <div className={styles.placeholder}>TT</div>
+              <div className={styles.placeholder}>کد</div>
             )}
           </div>
           <div className={styles.visualStats}>
@@ -214,7 +222,7 @@ export default function ProductDetail() {
           </div>
           <p>
             {product.short_description ||
-              "محصول دیجیتال قابل خرید از فروشگاه TempoTempo با اطلاعات پلتفرم، منطقه و موجودی مشخص."}
+              "محصول دیجیتال قابل خرید از فروشگاه تمپوتمپو با اطلاعات پلتفرم، منطقه و موجودی مشخص."}
           </p>
 
           <div className={styles.metaGrid}>
@@ -230,7 +238,7 @@ export default function ProductDetail() {
         <aside className={styles.buyCard}>
           <div className={styles.buyHeader}>
             <span>انتخاب و خرید</span>
-            <strong>{selectedVariant ? `$${selectedVariant.price}` : "انتخاب نوع"}</strong>
+            <strong>{selectedVariant ? formatCurrency(selectedVariant.price) : "انتخاب نوع"}</strong>
           </div>
 
           <div className={styles.variantSection}>
@@ -245,7 +253,7 @@ export default function ProductDetail() {
                   onClick={() => setSelectedVariant(variant)}
                 >
                   <strong>{variant.name}</strong>
-                  <span>${variant.price}</span>
+                  <span>{formatCurrency(variant.price)}</span>
                   <em>{variant.stock > 0 ? `${variant.stock} موجود` : "ناموجود"}</em>
                 </button>
               ))}
@@ -320,7 +328,11 @@ export default function ProductDetail() {
           {activeTab === "description" && (
             <article className={styles.description}>
               <h2>درباره این محصول</h2>
-              <p>{product.description || "توضیحاتی برای این محصول ثبت نشده است."}</p>
+              {descriptionParagraphs.length > 0 ? (
+                descriptionParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)
+              ) : (
+                <p>توضیحاتی برای این محصول ثبت نشده است.</p>
+              )}
             </article>
           )}
 

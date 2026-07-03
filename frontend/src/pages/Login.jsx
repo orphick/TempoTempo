@@ -29,7 +29,7 @@ export default function Login() {
     <main className={styles.wrapper}>
       <section className={styles.authShell}>
         <aside className={styles.infoPanel}>
-          <span className={styles.kicker}>TempoTempo Account</span>
+          <span className={styles.kicker}>حساب تمپوتمپو</span>
           <h1>به حساب خرید دیجیتال خود برگردید</h1>
           <p>
             سفارش‌ها، سبد خرید، علاقه‌مندی‌ها و وضعیت خریدهای دیجیتال شما در
@@ -38,7 +38,7 @@ export default function Login() {
           <div className={styles.infoGrid}>
             <div>
               <strong>امن</strong>
-              <span>ورود با توکن JWT</span>
+              <span>ورود با توکن امن</span>
             </div>
             <div>
               <strong>سریع</strong>
@@ -53,7 +53,7 @@ export default function Login() {
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.kicker}>Login</span>
+            <span className={styles.kicker}>ورود</span>
             <h2>ورود به حساب</h2>
             <p>برای ادامه خرید، ایمیل و رمز عبور خود را وارد کنید.</p>
           </div>

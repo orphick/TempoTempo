@@ -49,7 +49,7 @@ export default function Navbar() {
       <nav className={styles.nav}>
         <div className={styles.container}>
           <Link to="/" className={styles.logo}>
-            TempoTempo
+            تمپوتمپو
           </Link>
 
           <div className={styles.links}>

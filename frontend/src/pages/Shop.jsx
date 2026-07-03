@@ -128,7 +128,7 @@ export default function Shop() {
     <div className={styles.wrapper}>
       <section className={styles.hero}>
         <div>
-          <p className={styles.kicker}>Shop TempoTempo</p>
+          <p className={styles.kicker}>فروشگاه تمپوتمپو</p>
           <h1>فروشگاه محصولات دیجیتال بازی</h1>
           <p>
             محصول مورد نظر را بر اساس دسته‌بندی، نام، قیمت و موجودی پیدا کن و
@@ -237,7 +237,7 @@ export default function Shop() {
 
           {(activeCategory || searchQuery) && (
             <div className={styles.activeFilters}>
-              {activeCategory && <span>{selectedCategory?.name || activeCategory}</span>}
+              {activeCategory && <span>{selectedCategory?.name || "دسته انتخاب‌شده"}</span>}
               {searchQuery && <span>جستجو: {searchQuery}</span>}
               <button onClick={clearFilters}>حذف همه</button>
             </div>

@@ -106,7 +106,7 @@
   color: var(--text-primary);
   font-size: clamp(26px, 3vw, 38px);
   line-height: 1;
-  direction: ltr;
+  direction: rtl;
   text-align: right;
 }
 
@@ -179,7 +179,7 @@
   color: var(--text-muted);
   font-size: 10px;
   font-weight: 800;
-  direction: ltr;
+  direction: rtl;
 }
 
 .chartBar {
@@ -284,7 +284,7 @@
 .ordersTable td:nth-child(3) {
   color: var(--text-primary);
   font-weight: 900;
-  direction: ltr;
+  direction: rtl;
 }
 
 .badge {
