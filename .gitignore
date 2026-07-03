@@ -20,6 +20,7 @@ media/products/
 .env.*
 !.env.example
 !frontend/.env.example
+!frontend/.env.production.example
 
 # Node
 node_modules/
