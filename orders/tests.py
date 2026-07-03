@@ -85,7 +85,7 @@ class CommerceFlowTests(APITestCase):
     def test_only_completed_buyers_can_review_product(self):
         forbidden_response = self.client.post(f'/api/reviews/{self.product.id}/', {
             'rating': 5,
-            'comment': 'Great service',
+            'comment': 'خرید راحت بود و توضیح محصول کمک کرد اشتباه انتخاب نکنم.',
         })
 
         self.assertEqual(forbidden_response.status_code, 403)
@@ -104,7 +104,7 @@ class CommerceFlowTests(APITestCase):
 
         response = self.client.post(f'/api/reviews/{self.product.id}/', {
             'rating': 5,
-            'comment': 'Great service',
+            'comment': 'خرید راحت بود و توضیح محصول کمک کرد اشتباه انتخاب نکنم.',
         })
 
         self.assertEqual(response.status_code, 201)

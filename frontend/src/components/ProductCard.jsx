@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import useWishlistStore from "../store/useWishlistStore";
 import useAuthStore from "../store/useAuthStore";
+import { formatCurrency } from "../utils/formatters";
 import styles from "./ProductCard.module.css";
 
 export default function ProductCard({ product }) {
@@ -41,7 +42,7 @@ export default function ProductCard({ product }) {
         <div className={styles.footer}>
           <div className={styles.price}>
             <span className={styles.priceLabel}>از</span>
-            <span className={styles.priceValue}>${product.starting_price}</span>
+            <span className={styles.priceValue}>{formatCurrency(product.starting_price)}</span>
           </div>
           <span className={styles.viewBtn}>مشاهده ←</span>
         </div>

@@ -22,7 +22,7 @@ export default function Blog() {
   return (
     <section className={styles.page}>
       <header className={styles.hero}>
-        <span className={styles.eyebrow}>مجله TempoTempo</span>
+        <span className={styles.eyebrow}>مجله تمپوتمپو</span>
         <h1>راهنمای خرید و اخبار دنیای بازی</h1>
         <p>مطالب کوتاه و کاربردی برای انتخاب بهتر گیفت کارت، اشتراک و آیتم‌های دیجیتال.</p>
       </header>
@@ -51,7 +51,7 @@ function BlogCard({ post }) {
         className={styles.image}
         style={post.image ? { backgroundImage: `url(${post.image})` } : undefined}
       >
-        {!post.image && <span>TempoTempo</span>}
+        {!post.image && <span>تمپوتمپو</span>}
       </div>
       <div className={styles.body}>
         <time>{date}</time>

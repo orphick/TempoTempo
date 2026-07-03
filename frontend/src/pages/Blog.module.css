@@ -113,3 +113,24 @@
     padding: 32px 18px 56px;
   }
 }
+
+@media (min-width: 900px) {
+  .card:first-child {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+
+  .card:first-child .image {
+    min-height: 100%;
+  }
+
+  .card:first-child .body {
+    padding: 28px;
+  }
+
+  .card:first-child .body h2 {
+    font-size: 24px;
+    line-height: 1.45;
+  }
+}

@@ -117,7 +117,7 @@ export default function Profile() {
                 تغییر تصویر
                 <input type="file" accept="image/*" onChange={handleAvatarChange} />
               </label>
-              <small>JPG، PNG یا WebP با حجم مناسب برای نمایش سریع‌تر.</small>
+              <small>تصویر با حجم مناسب برای نمایش سریع‌تر انتخاب کنید.</small>
             </div>
           </div>
 
@@ -127,7 +127,7 @@ export default function Profile() {
               <input
                 value={form.username ?? user.username ?? ""}
                 onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
-                placeholder="username"
+                placeholder="نام کاربری"
               />
             </label>
             <label>

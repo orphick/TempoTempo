@@ -6,9 +6,9 @@ const FOOTER_LINKS = [
     title: "فروشگاه",
     links: [
       { label: "همه محصولات", to: "/shop" },
-      { label: "World of Warcraft", to: "/shop?category=world-of-warcraft" },
-      { label: "Steam", to: "/shop?category=steam" },
-      { label: "Battle.net", to: "/shop?category=battle-net" },
+      { label: "وارکرفت", to: "/shop?category=world-of-warcraft" },
+      { label: "استیم", to: "/shop?category=steam" },
+      { label: "بتل‌نت", to: "/shop?category=battle-net" },
     ],
   },
   {
@@ -38,7 +38,7 @@ export default function Footer() {
         <div className={styles.top}>
           <div className={styles.brand}>
             <Link to="/" className={styles.logo}>
-              TempoTempo
+              تمپوتمپو
             </Link>
             <p>
               مرجع خرید محصولات دیجیتال بازی، گیفت کارت و اشتراک با تجربه‌ای سریع،
@@ -64,7 +64,7 @@ export default function Footer() {
         </div>
 
         <div className={styles.bottom}>
-          <p>© ۱۴۰۵ TempoTempo - تمام حقوق محفوظ است.</p>
+          <p>© ۱۴۰۵ تمپوتمپو - تمام حقوق محفوظ است.</p>
           <p>پروژه کارشناسی مهندسی نرم‌افزار</p>
         </div>
       </div>

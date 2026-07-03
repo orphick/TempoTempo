@@ -3,18 +3,17 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import ProductCard from "../components/ProductCard";
 import { ProductCardSkeleton } from "../components/Skeleton";
-import heroArt from "../assets/hero.png";
 import styles from "./Home.module.css";
 
 const CATEGORY_LABELS = {
-  steam: "ST",
-  "battle-net": "BN",
-  "gift-cards": "GC",
-  hearthstone: "HS",
-  "call-of-duty": "CD",
-  "mobile-games": "MG",
-  "world-of-warcraft": "WW",
-  default: "TT",
+  steam: "اس",
+  "battle-net": "بت",
+  "gift-cards": "گی",
+  hearthstone: "ها",
+  "call-of-duty": "کا",
+  "mobile-games": "مو",
+  "world-of-warcraft": "وا",
+  default: "تم",
 };
 
 const TRUST_ITEMS = [
@@ -42,11 +41,37 @@ const STEPS = [
   },
 ];
 
+const getList = (data) => {
+  if (Array.isArray(data?.results)) return data.results;
+  if (Array.isArray(data)) return data;
+  return [];
+};
+
+const getTotal = (data, fallback) => (
+  typeof data?.count === "number" ? data.count : fallback
+);
+
+const formatNumber = (value, fallback = "—") => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
+  return new Intl.NumberFormat("fa-IR").format(numeric);
+};
+
+const formatPrice = (price) => {
+  const numeric = Number(price);
+  if (!Number.isFinite(numeric)) return "نامشخص";
+
+  const maximumFractionDigits = Number.isInteger(numeric) ? 0 : 2;
+  return `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits }).format(numeric)} دلار`;
+};
+
 export default function Home() {
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured] = useState([]);
   const [newest, setNewest] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [productTotal, setProductTotal] = useState(0);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [loadingNewest, setLoadingNewest] = useState(true);
@@ -55,72 +80,135 @@ export default function Home() {
   useEffect(() => {
     api
       .get("/products/categories/")
-      .then((res) => setCategories(res.data.results || res.data))
+      .then((res) => setCategories(getList(res.data)))
       .catch(() => setCategories([]))
       .finally(() => setLoadingCategories(false));
 
     api
-      .get("/products/?featured=true")
-      .then((res) => setFeatured((res.data.results || res.data).slice(0, 6)))
+      .get("/products/?featured=true&page_size=8")
+      .then((res) => setFeatured(getList(res.data).slice(0, 8)))
       .catch(() => setFeatured([]))
       .finally(() => setLoadingFeatured(false));
 
     api
-      .get("/products/")
-      .then((res) => setNewest((res.data.results || res.data).slice(0, 4)))
-      .catch(() => setNewest([]))
+      .get("/products/?page_size=8")
+      .then((res) => {
+        const products = getList(res.data);
+        setNewest(products.slice(0, 4));
+        setProductTotal(getTotal(res.data, products.length));
+      })
+      .catch(() => {
+        setNewest([]);
+        setProductTotal(0);
+      })
       .finally(() => setLoadingNewest(false));
 
     api
       .get("/blog/")
-      .then((res) => setPosts((res.data.results || res.data).slice(0, 3)))
+      .then((res) => setPosts(getList(res.data).slice(0, 3)))
       .catch(() => setPosts([]))
       .finally(() => setLoadingPosts(false));
   }, []);
 
   const heroProducts = useMemo(() => {
     const products = featured.length > 0 ? featured : newest;
-    return products.slice(0, 3);
+    return products.slice(0, 5);
   }, [featured, newest]);
+
+  useEffect(() => {
+    if (heroProducts.length < 2) return undefined;
+
+    const timer = window.setInterval(() => {
+      setActiveHeroIndex((current) => (current + 1) % heroProducts.length);
+    }, 5200);
+
+    return () => window.clearInterval(timer);
+  }, [heroProducts.length]);
+
+  const activeHeroProduct = heroProducts[activeHeroIndex % heroProducts.length];
+  const heroProductUrl = activeHeroProduct ? `/products/${activeHeroProduct.slug}` : "/shop";
+  const heroPrice = activeHeroProduct ? formatPrice(activeHeroProduct.starting_price) : "نامشخص";
 
   return (
     <div className={styles.page}>
-      <section className={styles.hero}>
-        <img src={heroArt} alt="" className={styles.heroArt} />
+      <section
+        className={styles.hero}
+        style={activeHeroProduct?.image ? { "--hero-image": `url(${activeHeroProduct.image})` } : undefined}
+      >
+        <div className={styles.heroBackdrop} />
         <div className={styles.heroShade} />
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>TempoTempo Digital Store</p>
+            <p className={styles.eyebrow}>
+              {activeHeroProduct?.category_name || "فروشگاه دیجیتال تمپوتمپو"}
+            </p>
             <h1 className={styles.heroTitle}>
-              خرید سریع و مطمئن محصولات دیجیتال بازی
+              {activeHeroProduct?.name || "خرید سریع و مطمئن محصولات دیجیتال بازی"}
             </h1>
             <p className={styles.heroText}>
-              گیفت کارت، گیم تایم و شارژ حساب‌های بازی را با موجودی کنترل‌شده،
-              سفارش امن و تجربه‌ای روان تهیه کن.
+              {activeHeroProduct
+                ? `از ${heroPrice} شروع می‌شود؛ ظرفیت، منطقه و موجودی را در صفحه محصول بررسی کن و خرید را مستقیم ادامه بده.`
+                : "گیفت کارت، گیم تایم و شارژ حساب‌های بازی را با موجودی کنترل‌شده، سفارش امن و تجربه‌ای روان تهیه کن."}
             </p>
             <div className={styles.heroActions}>
-              <Link to="/shop" className={styles.primaryAction}>
-                ورود به فروشگاه
+              <Link to={heroProductUrl} className={styles.primaryAction}>
+                {activeHeroProduct ? "مشاهده محصول" : "ورود به فروشگاه"}
               </Link>
-              <Link to="/blog" className={styles.secondaryAction}>
-                راهنمای خرید
+              <Link to="/shop?featured=true" className={styles.secondaryAction}>
+                پیشنهادهای ویژه
               </Link>
             </div>
           </div>
 
-          <div className={styles.heroSummary} aria-label="خلاصه فروشگاه">
-            <span className={styles.summaryLabel}>امروز در فروشگاه</span>
-            <div className={styles.summaryRows}>
-              <span>محصولات فعال</span>
-              <strong>{newest.length || "۴+"}</strong>
-            </div>
-            <div className={styles.summaryRows}>
-              <span>دسته‌بندی‌ها</span>
-              <strong>{categories.length || "۶+"}</strong>
-            </div>
-            <div className={styles.summaryRows}>
-              <span>کد تخفیف دمو</span>
-              <strong>DEMO10</strong>
+          <div className={styles.heroAside}>
+            <Link to={heroProductUrl} className={styles.heroShowcase}>
+              <div className={styles.showcaseImageWrap}>
+                {activeHeroProduct?.image ? (
+                  <img
+                    src={activeHeroProduct.image}
+                    alt={activeHeroProduct.name}
+                    className={styles.showcaseImage}
+                  />
+                ) : (
+                  <div className={styles.showcasePlaceholder}>تمپوتمپو</div>
+                )}
+              </div>
+              <div className={styles.showcaseBody}>
+                <span>{activeHeroProduct?.category_name || "پیشنهاد فروشگاه"}</span>
+                <strong>{activeHeroProduct?.name || "محصولات دیجیتال بازی"}</strong>
+                <em>از {heroPrice}</em>
+              </div>
+            </Link>
+
+            {heroProducts.length > 1 && (
+              <div className={styles.heroControls} aria-label="محصولات برجسته">
+                {heroProducts.map((product, index) => (
+                  <button
+                    key={product.id}
+                    type="button"
+                    className={`${styles.heroDot} ${index === activeHeroIndex ? styles.heroDotActive : ""}`}
+                    aria-label={`نمایش ${product.name}`}
+                    aria-pressed={index === activeHeroIndex}
+                    onClick={() => setActiveHeroIndex(index)}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className={styles.heroSummary} aria-label="خلاصه فروشگاه">
+              <span className={styles.summaryLabel}>امروز در فروشگاه</span>
+              <div className={styles.summaryRows}>
+                <span>محصولات فعال</span>
+                <strong>{formatNumber(productTotal || newest.length, "۱۹+")}</strong>
+              </div>
+              <div className={styles.summaryRows}>
+                <span>دسته‌بندی‌ها</span>
+                <strong>{formatNumber(categories.length, "۷+")}</strong>
+              </div>
+              <div className={styles.summaryRows}>
+                <span>کد تخفیف دمو</span>
+                <strong>DEMO10</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -194,7 +282,7 @@ export default function Home() {
               >
                 <span>{product.category_name || "محصول دیجیتال"}</span>
                 <strong>{product.name}</strong>
-                <em>از ${product.starting_price || "—"}</em>
+                <em>از {formatPrice(product.starting_price)}</em>
               </Link>
             ))
           ) : (
@@ -278,7 +366,7 @@ export default function Home() {
           <div className={styles.sectionHeader}>
             <div>
               <p className={styles.sectionKicker}>مجله خرید</p>
-              <h2 className={styles.sectionTitle}>راهنماها و مقالات</h2>
+              <h2 className={styles.sectionTitle}>راهنماها و مقاله‌ها</h2>
             </div>
             <Link to="/blog" className={styles.textLink}>
               همه مقاله‌ها

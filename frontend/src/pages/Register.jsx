@@ -49,7 +49,7 @@ export default function Register() {
     <main className={styles.wrapper}>
       <section className={styles.authShell}>
         <aside className={styles.infoPanel}>
-          <span className={styles.kicker}>New Customer</span>
+          <span className={styles.kicker}>مشتری جدید</span>
           <h1>حساب بسازید و خرید دیجیتال را مدیریت کنید</h1>
           <p>
             با ساخت حساب، سبد خرید، سفارش‌ها، علاقه‌مندی‌ها و امکان ثبت نظر پس
@@ -73,9 +73,9 @@ export default function Register() {
 
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.kicker}>Register</span>
+            <span className={styles.kicker}>ثبت‌نام</span>
             <h2>ایجاد حساب</h2>
-            <p>اطلاعات اولیه را وارد کنید تا حساب TempoTempo شما ساخته شود.</p>
+            <p>اطلاعات اولیه را وارد کنید تا حساب تمپوتمپو شما ساخته شود.</p>
           </div>
 
           <form className={styles.form} onSubmit={handleSubmit}>
@@ -88,7 +88,7 @@ export default function Register() {
                 name="username"
                 value={form.username}
                 onChange={handleChange}
-                placeholder="username"
+                placeholder="نام کاربری"
                 dir="ltr"
                 required
               />

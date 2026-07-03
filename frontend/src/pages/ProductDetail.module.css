@@ -215,7 +215,7 @@
   color: #ffffff;
   font-size: 28px;
   line-height: 1;
-  direction: ltr;
+  direction: rtl;
 }
 
 .variantSection {
@@ -265,7 +265,7 @@
 .variantBtn span {
   color: #70d6b5;
   font-weight: 900;
-  direction: ltr;
+  direction: rtl;
 }
 
 .variantBtn em {
@@ -443,10 +443,14 @@
 }
 
 .description p {
-  margin: 0;
+  margin: 0 0 14px;
   color: var(--text-secondary);
   font-size: 15px;
   line-height: 2;
+}
+
+.description p:last-child {
+  margin-bottom: 0;
 }
 
 .stepsGrid {

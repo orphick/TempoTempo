@@ -80,7 +80,7 @@
   color: var(--text-primary);
   font-size: 22px;
   line-height: 1;
-  direction: ltr;
+  direction: rtl;
 }
 
 .summaryStrip {
@@ -270,7 +270,7 @@
 .itemInfo span {
   color: var(--text-muted);
   font-size: 12px;
-  direction: ltr;
+  direction: rtl;
   text-align: right;
 }
 
@@ -279,7 +279,7 @@
   font-style: normal;
   font-size: 14px;
   font-weight: 900;
-  direction: ltr;
+  direction: rtl;
 }
 
 .orderFooter {
@@ -314,7 +314,7 @@
 .total strong {
   color: #ffffff;
   font-size: 24px;
-  direction: ltr;
+  direction: rtl;
 }
 
 .stateCard {

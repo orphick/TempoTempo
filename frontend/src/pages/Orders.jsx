@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
 import useAuthStore from "../store/useAuthStore";
+import { formatCurrency } from "../utils/formatters";
 import styles from "./Orders.module.css";
 
 const STATUS = {
@@ -60,7 +61,7 @@ export default function Orders() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.kicker}>Orders Access</span>
+          <span className={styles.kicker}>دسترسی سفارش‌ها</span>
           <h1>برای مشاهده سفارش‌ها وارد حساب شوید</h1>
           <p>تاریخچه خرید، وضعیت سفارش و جزئیات محصولات خریداری‌شده در این بخش نمایش داده می‌شود.</p>
           <div className={styles.stateActions}>
@@ -76,7 +77,7 @@ export default function Orders() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.kicker}>Loading</span>
+          <span className={styles.kicker}>در حال بارگذاری</span>
           <h1>در حال بارگذاری سفارش‌ها...</h1>
         </section>
       </main>
@@ -87,7 +88,7 @@ export default function Orders() {
     return (
       <main className={styles.wrapper}>
         <section className={styles.stateCard}>
-          <span className={styles.kicker}>Order History</span>
+          <span className={styles.kicker}>تاریخچه سفارش</span>
           <h1>هنوز سفارشی ثبت نکرده‌اید</h1>
           <p>بعد از خرید محصول، سفارش شما اینجا با وضعیت و جزئیات کامل نمایش داده می‌شود.</p>
           <div className={styles.stateActions}>
@@ -103,7 +104,7 @@ export default function Orders() {
     <main className={styles.wrapper}>
       <section className={styles.hero}>
         <div>
-          <p className={styles.kicker}>Order History</p>
+          <p className={styles.kicker}>تاریخچه سفارش</p>
           <h1>سفارش‌های من</h1>
           <p>وضعیت خریدهای دیجیتال، آیتم‌ها و مبلغ هر سفارش را از اینجا دنبال کن.</p>
         </div>
@@ -117,7 +118,7 @@ export default function Orders() {
             در جریان
           </span>
           <span>
-            <strong>${stats.totalSpent.toFixed(2)}</strong>
+            <strong>{formatCurrency(stats.totalSpent)}</strong>
             مجموع خرید
           </span>
         </div>
@@ -168,12 +169,12 @@ export default function Orders() {
               <div className={styles.items}>
                 {order.items.map((item) => (
                   <div key={item.id} className={styles.item}>
-                    <div className={styles.itemMark}>TT</div>
+                    <div className={styles.itemMark}>کد</div>
                     <div className={styles.itemInfo}>
                       <strong>{item.variant.name}</strong>
-                      <span>{item.quantity} عدد × ${item.price}</span>
+                      <span>{item.quantity} عدد × {formatCurrency(item.price)}</span>
                     </div>
-                    <em>${item.subtotal}</em>
+                    <em>{formatCurrency(item.subtotal)}</em>
                   </div>
                 ))}
               </div>
@@ -189,7 +190,7 @@ export default function Orders() {
                 </div>
                 <div className={styles.total}>
                   <span>مجموع</span>
-                  <strong>${order.total_price}</strong>
+                  <strong>{formatCurrency(order.total_price)}</strong>
                 </div>
               </footer>
             </article>

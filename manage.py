@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+"""Command-line entry point for the TempoTempo Django backend."""
 import os
 import sys
 
 
 def main():
-    """Run administrative tasks."""
+    """Dispatch Django management commands."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
     try:
         from django.core.management import execute_from_command_line

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from blog.models import BlogPost
 from products.models import Product as ProductModel, ProductVariant
 from products.serializers import ProductListSerializer
 from .serializers import CartSerializer, OrderSerializer
@@ -178,6 +179,20 @@ class AdminStatsView(APIView):
         total_revenue = Order.objects.filter(
             status='completed'
         ).aggregate(total=db_models.Sum('total_price'))['total'] or 0
+        total_orders = Order.objects.count()
+        completed_orders = Order.objects.filter(status='completed').count()
+        pending_orders = Order.objects.filter(status__in=['pending', 'processing']).count()
+        average_order_value = (
+            Order.objects
+            .filter(status='completed')
+            .aggregate(avg=db_models.Avg('total_price'))['avg']
+            or 0
+        )
+        low_stock_variants = ProductVariant.objects.filter(
+            product__is_active=True,
+            is_active=True,
+            stock__lte=5,
+        ).count()
 
         orders_by_status = {
             s: Order.objects.filter(status=s).count()
@@ -203,9 +218,14 @@ class AdminStatsView(APIView):
 
         return Response({
             'total_revenue': float(total_revenue),
-            'total_orders': Order.objects.count(),
+            'total_orders': total_orders,
+            'completed_orders': completed_orders,
+            'pending_orders': pending_orders,
             'total_users': User.objects.count(),
             'total_products': ProductModel.objects.filter(is_active=True).count(),
+            'total_blog_posts': BlogPost.objects.filter(published=True).count(),
+            'average_order_value': float(average_order_value),
+            'low_stock_variants': low_stock_variants,
             'orders_by_status': orders_by_status,
             'monthly_revenue': monthly_revenue,
         })
