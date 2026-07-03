@@ -1,6 +1,15 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const LOCAL_API_BASE_URL = 'http://localhost:8000/api'
+const PRODUCTION_API_BASE_URL = 'https://tempotempo-api.onrender.com/api'
+
+const isLocalBrowser =
+  typeof window !== 'undefined' &&
+  ['localhost', '127.0.0.1'].includes(window.location.hostname)
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (isLocalBrowser ? LOCAL_API_BASE_URL : PRODUCTION_API_BASE_URL)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
