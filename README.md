@@ -167,7 +167,7 @@ On Windows PowerShell, use `$env:USE_SQLITE='True'; python manage.py test`.
 The project is prepared for a low-cost hosted demo with:
 
 - Django API and PostgreSQL on Render using `render.yaml`
-- React/Vite frontend on Vercel from the `frontend` directory
+- React/Vite frontend on Vercel from the repo root or the `frontend` directory
 
 Render creates the free PostgreSQL database, installs Python dependencies, collects static files, runs migrations, and seeds the demo catalog through `build.sh`. The default API URL expected by the production frontend is:
 
@@ -175,7 +175,7 @@ Render creates the free PostgreSQL database, installs Python dependencies, colle
 https://tempotempo-api.onrender.com/api
 ```
 
-For Vercel, set `VITE_API_BASE_URL` to the Render API URL above. The frontend includes `frontend/vercel.json` so browser refreshes on nested React routes fall back to `index.html`.
+For Vercel, `vercel.json` builds the `frontend` app and sets `VITE_API_BASE_URL` for the presentation API. The frontend also includes `frontend/vercel.json` for setups where the Vercel project root is configured as `frontend`.
 
 ## API Overview
 
