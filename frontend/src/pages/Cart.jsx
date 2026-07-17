@@ -195,7 +195,8 @@ export default function Cart() {
               <article key={item.id} className={styles.item}>
                 <div className={styles.itemMark}>کد</div>
                 <div className={styles.itemInfo}>
-                  <h3>{item.variant.name}</h3>
+                  <h3>{item.variant.product_name || item.variant.name}</h3>
+                  <p className={styles.itemVariant}>{item.variant.name}</p>
                   <p>{formatCurrency(item.variant.price)} برای هر عدد</p>
                 </div>
 
@@ -237,7 +238,12 @@ export default function Cart() {
           <div className={styles.summaryRows}>
             {cart.items.map((item) => (
               <div key={item.id} className={styles.summaryRow}>
-                <span>{item.variant.name} × {item.quantity}</span>
+                <span>
+                  {item.variant.product_name
+                    ? `${item.variant.product_name} — ${item.variant.name}`
+                    : item.variant.name}{" "}
+                  × {item.quantity}
+                </span>
                 <strong>{formatCurrency(item.subtotal)}</strong>
               </div>
             ))}

@@ -17,9 +17,12 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_slug = serializers.SlugField(source='product.slug', read_only=True)
+
     class Meta:
         model = ProductVariant
-        fields = ['id', 'name', 'price', 'stock', 'is_active']
+        fields = ['id', 'name', 'price', 'stock', 'is_active', 'product_name', 'product_slug']
 
 
 class ProductSerializer(serializers.ModelSerializer):

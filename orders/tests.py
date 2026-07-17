@@ -80,7 +80,7 @@ class CommerceFlowTests(APITestCase):
         response = self.client.post('/api/checkout/')
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Only 1 units', response.data['error'])
+        self.assertIn('فقط 1 عدد', response.data['error'])
 
     def test_only_completed_buyers_can_review_product(self):
         forbidden_response = self.client.post(f'/api/reviews/{self.product.id}/', {
@@ -109,3 +109,25 @@ class CommerceFlowTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Review.objects.filter(user=self.user, product=self.product).exists())
+
+    def test_review_rejects_non_numeric_rating(self):
+        order = Order.objects.create(
+            user=self.user,
+            status='completed',
+            total_price=Decimal('1000000.00'),
+        )
+        OrderItem.objects.create(
+            order=order,
+            variant=self.variant,
+            quantity=1,
+            price=Decimal('1000000.00'),
+        )
+
+        response = self.client.post(f'/api/reviews/{self.product.id}/', {
+            'rating': 'excellent',
+            'comment': 'تست ورودی نامعتبر برای امتیاز.',
+        })
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.data)
+        self.assertFalse(Review.objects.filter(user=self.user, product=self.product).exists())

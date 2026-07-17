@@ -214,6 +214,13 @@
   text-align: right;
 }
 
+.itemInfo .itemVariant {
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .qtyControls {
   min-height: 42px;
   display: flex;
