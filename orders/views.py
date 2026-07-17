@@ -17,9 +17,9 @@ def parse_positive_int(value, field_name):
     try:
         parsed = int(value)
     except (TypeError, ValueError):
-        return None, f'{field_name} must be a positive number'
+        return None, f'{field_name} باید یک عدد صحیح باشد'
     if parsed < 1:
-        return None, f'{field_name} must be at least 1'
+        return None, f'{field_name} باید حداقل ۱ باشد'
     return parsed, None
 
 
@@ -28,22 +28,27 @@ class CartView(APIView):
 
     def get(self, request):
         cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart = (
+            Cart.objects
+            .prefetch_related('items__variant__product')
+            .get(pk=cart.pk)
+        )
         return Response(CartSerializer(cart).data)
 
     def post(self, request):
         cart, _ = Cart.objects.get_or_create(user=request.user)
         variant_id = request.data.get('variant_id')
-        quantity, error = parse_positive_int(request.data.get('quantity', 1), 'quantity')
+        quantity, error = parse_positive_int(request.data.get('quantity', 1), 'تعداد')
         if error:
             return Response({'error': error}, status=400)
 
         try:
             variant = ProductVariant.objects.get(id=variant_id, is_active=True)
         except ProductVariant.DoesNotExist:
-            return Response({'error': 'Variant not found'}, status=404)
+            return Response({'error': 'محصول مورد نظر یافت نشد'}, status=404)
 
         if variant.stock < 1:
-            return Response({'error': 'Product is out of stock'}, status=400)
+            return Response({'error': 'موجودی این محصول تمام شده است'}, status=400)
 
         item, created = CartItem.objects.get_or_create(cart=cart, variant=variant)
         if not created:
@@ -61,12 +66,12 @@ class CartItemView(APIView):
         try:
             item = CartItem.objects.get(id=item_id, cart__user=request.user)
         except CartItem.DoesNotExist:
-            return Response({'error': 'Item not found'}, status=404)
-        quantity, error = parse_positive_int(request.data.get('quantity', item.quantity), 'quantity')
+            return Response({'error': 'آیتم مورد نظر در سبد یافت نشد'}, status=404)
+        quantity, error = parse_positive_int(request.data.get('quantity', item.quantity), 'تعداد')
         if error:
             return Response({'error': error}, status=400)
         if quantity > item.variant.stock:
-            return Response({'error': 'Requested quantity exceeds stock'}, status=400)
+            return Response({'error': 'تعداد درخواستی بیشتر از موجودی است'}, status=400)
         item.quantity = quantity
         item.save()
         return Response(CartSerializer(item.cart).data)
@@ -75,7 +80,7 @@ class CartItemView(APIView):
         try:
             item = CartItem.objects.get(id=item_id, cart__user=request.user)
         except CartItem.DoesNotExist:
-            return Response({'error': 'Item not found'}, status=404)
+            return Response({'error': 'آیتم مورد نظر در سبد یافت نشد'}, status=404)
         cart = item.cart
         item.delete()
         return Response(CartSerializer(cart).data)
@@ -93,7 +98,7 @@ class CheckoutView(APIView):
                 cart.items.select_related('variant', 'variant__product').select_for_update()
             )
             if not items:
-                return Response({'error': 'Cart is empty'}, status=400)
+                return Response({'error': 'سبد خرید خالی است'}, status=400)
 
             variant_ids = [item.variant_id for item in items]
             variants = {
@@ -104,10 +109,10 @@ class CheckoutView(APIView):
             for item in items:
                 variant = variants[item.variant_id]
                 if not variant.is_active:
-                    return Response({'error': f'{variant.name} is not available'}, status=400)
+                    return Response({'error': f'{variant.name} در حال حاضر موجود نیست'}, status=400)
                 if item.quantity > variant.stock:
                     return Response(
-                        {'error': f'Only {variant.stock} units of {variant.name} are available'},
+                        {'error': f'فقط {variant.stock} عدد از {variant.name} موجود است'},
                         status=400,
                     )
 
@@ -165,7 +170,7 @@ class OrderListView(APIView):
         orders = (
             Order.objects
             .filter(user=request.user)
-            .prefetch_related('items__variant')
+            .prefetch_related('items__variant__product')
             .order_by('-created_at')
         )
         return Response(OrderSerializer(orders, many=True).data)
@@ -333,7 +338,10 @@ class ReviewView(APIView):
                 status=403
             )
 
-        rating = int(request.data.get('rating', 0))
+        try:
+            rating = int(request.data.get('rating', 0))
+        except (TypeError, ValueError):
+            return Response({'error': 'امتیاز باید یک عدد بین ۱ تا ۵ باشد'}, status=400)
         if not 1 <= rating <= 5:
             return Response({'error': 'امتیاز باید بین ۱ تا ۵ باشد'}, status=400)
 

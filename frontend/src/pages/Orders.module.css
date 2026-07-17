@@ -274,6 +274,11 @@
   text-align: right;
 }
 
+.itemInfo .itemVariant {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .item em {
   color: #70d6b5;
   font-style: normal;

@@ -171,7 +171,10 @@ export default function Orders() {
                   <div key={item.id} className={styles.item}>
                     <div className={styles.itemMark}>کد</div>
                     <div className={styles.itemInfo}>
-                      <strong>{item.variant.name}</strong>
+                      <strong>{item.variant.product_name || item.variant.name}</strong>
+                      {item.variant.product_name && (
+                        <span className={styles.itemVariant}>{item.variant.name}</span>
+                      )}
                       <span>{item.quantity} عدد × {formatCurrency(item.price)}</span>
                     </div>
                     <em>{formatCurrency(item.subtotal)}</em>
