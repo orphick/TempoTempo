@@ -1,3 +1,4 @@
+import os
 from decimal import Decimal
 from pathlib import Path
 
@@ -144,8 +145,14 @@ class Command(BaseCommand):
                 'is_superuser': True,
             },
         )
+        # Never hard-code the deployed admin password: a public repo would publish it.
+        admin_password = os.getenv('DEMO_ADMIN_PASSWORD')
         if created:
-            admin.set_password('admin12345')
+            admin.set_password(admin_password or 'admin12345')
+            admin.save()
+        elif admin_password:
+            # Re-seeding with the variable set rotates the password on an existing deployment.
+            admin.set_password(admin_password)
             admin.save()
 
         category_data = [
@@ -760,4 +767,9 @@ class Command(BaseCommand):
             )
         BlogPost.objects.filter(slug='lorem-ipsum').update(published=False)
 
-        self.stdout.write(self.style.SUCCESS('Demo data created. Admin: admin@tempotempo.test / admin12345'))
+        # Do not echo the password: this output ends up in deployment build logs.
+        source = 'DEMO_ADMIN_PASSWORD' if admin_password else 'development default'
+        self.stdout.write(self.style.SUCCESS(
+            'Demo data created. Admin: admin@tempotempo.test '
+            f'(password from {source})'
+        ))

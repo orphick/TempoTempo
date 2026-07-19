@@ -105,11 +105,18 @@ Optional demo data for presentations:
 python manage.py seed_demo
 ```
 
-This creates sample products, variants, a coupon code `DEMO10`, one blog post, and an admin user:
+This creates sample products, variants, a coupon code `DEMO10`, one blog post, and an admin user
+with the email `admin@tempotempo.test`.
 
-```text
-admin@tempotempo.test / admin12345
+The admin password is read from the `DEMO_ADMIN_PASSWORD` environment variable and is intentionally
+not published in this repository. Set it before seeding — always for a public deployment:
+
+```bash
+DEMO_ADMIN_PASSWORD='<choose-a-strong-password>' python manage.py seed_demo
 ```
+
+If the variable is unset, a weak development-only default is used. Never rely on that default for a
+deployment that is reachable from the internet.
 
 ### Frontend
 
