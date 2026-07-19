@@ -168,6 +168,17 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+if not DEBUG:
+    # Cookies only travel over HTTPS in production. The API itself uses JWT,
+    # so this mainly protects the Django admin session.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    # Render already redirects HTTP to HTTPS at the edge, so the Django-level
+    # redirect stays opt-in to avoid redirect loops behind the proxy.
+    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', False)
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
