@@ -37,3 +37,13 @@ yarn-error.log*
 .chrome-*/
 .DS_Store
 Thumbs.db
+
+# Local Codex state and thesis working artifacts
+/.codex/
+/tmp/
+/output/
+/docs/generated_report*/
+/docs/PROJECT_REPORT_OUTLINE.md
+/docs/audit_persian_report.py
+/docs/build_persian_report*.py
+/docs/build_revised_thesis.py
