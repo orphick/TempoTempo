@@ -45,8 +45,8 @@ export default function Footer() {
               شفاف و قابل پیگیری.
             </p>
             <div className={styles.badges}>
-              <span>تحویل سریع</span>
-              <span>پرداخت امن</span>
+              <span>ثبت و پیگیری سفارش</span>
+              <span>پرداخت در دست توسعه</span>
               <span>پشتیبانی سفارش</span>
             </div>
           </div>

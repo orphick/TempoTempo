@@ -11,7 +11,7 @@ TempoTempo is a full-stack ecommerce platform for digital gaming products such a
 
 ## Main Features
 
-- Customer registration and JWT login
+- Customer registration and cookie-backed refresh-token login (access tokens stay in memory)
 - Product categories, products, variants, stock, featured products, and search
 - Cart management with quantity validation and stock limits
 - Transaction-safe checkout with coupon support and stock reduction
@@ -105,8 +105,8 @@ Optional demo data for presentations:
 python manage.py seed_demo
 ```
 
-This creates sample products, variants, a coupon code `DEMO10`, one blog post, and an admin user
-with the email `admin@tempotempo.test`.
+This creates sample products, variants, a coupon code `DEMO10`, one blog post, and—only when
+`DEMO_ADMIN_PASSWORD` is set—an admin user with the email `admin@tempotempo.test`.
 
 The admin password is read from the `DEMO_ADMIN_PASSWORD` environment variable and is intentionally
 not published in this repository. Set it before seeding — always for a public deployment:
@@ -115,8 +115,9 @@ not published in this repository. Set it before seeding — always for a public 
 DEMO_ADMIN_PASSWORD='<choose-a-strong-password>' python manage.py seed_demo
 ```
 
-If the variable is unset, a weak development-only default is used. Never rely on that default for a
-deployment that is reachable from the internet.
+There is no fallback password, including in development. In production the command fails safely if
+admin creation is requested without the secret. To rotate an existing demo admin, set a new
+`DEMO_ADMIN_PASSWORD` and run `python manage.py seed_demo` once; remove the secret afterward.
 
 ### Frontend
 
@@ -169,6 +170,49 @@ npm run lint
 
 On Windows PowerShell, use `$env:USE_SQLITE='True'; python manage.py test`.
 
+### Production configuration check
+
+Copy `.env.production.example` into your deployment secret manager; set explicit Vercel production
+and approved preview origins in both `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS`. Do not use
+a wildcard Vercel regular expression. Run this check with production-like variables:
+
+```powershell
+$env:DEBUG='False'; $env:SECRET_KEY='<long-random-secret>'; $env:ALLOWED_HOSTS='your-api.onrender.com'
+$env:CORS_ALLOWED_ORIGINS='https://your-app.vercel.app'; $env:CSRF_TRUSTED_ORIGINS='https://your-app.vercel.app'
+$env:SECURE_SSL_REDIRECT='True'; $env:USE_OBJECT_STORAGE='True'; $env:AWS_STORAGE_BUCKET_NAME='validation-only-bucket'
+python manage.py check --deploy
+```
+
+The application refuses to start under `DEBUG=False` with a missing or fallback secret. Render is
+configured to trust `X-Forwarded-Proto`; it redirects to HTTPS and uses secure HSTS/session/CSRF
+cookies. The refresh cookie is HttpOnly, Secure, and `SameSite=None` for the separate Vercel/Render
+origins; mutating authentication endpoints require Django CSRF protection.
+
+### Security and test coverage
+
+- Cart additions and updates reject over-stock quantities without changing the cart.
+- Checkout locks cart rows, variants, and coupons; PostgreSQL is required to prove real lock contention.
+- Status changes follow `pending -> processing/cancelled -> completed/cancelled`; cancellation restores stock once and writes an audit record.
+- Password registration/change uses Django validators. Refresh rotation and blacklist-backed logout are enabled.
+- Login, registration, refresh, password change, coupon validation, and checkout are rate-limited. Request IDs are returned as `X-Request-ID`; logs intentionally omit bodies, passwords, tokens, and payment data.
+- The API emits a restrictive CSP and Vercel sends the SPA CSP header. Edge WAF/rate limiting, secret rotation, security monitoring, and penetration testing remain deployment/infrastructure work.
+
+### Media and distributed rate limits
+
+Render's local filesystem is not durable for uploaded media. Production must use object storage (for
+example S3-compatible storage) before accepting user uploads; local media is for development only.
+The built-in DRF rate limiter is process-local, so a multi-worker deployment must add Redis-backed
+rate limiting or an edge control.
+
+PostgreSQL concurrency tests must be run only against an isolated PostgreSQL test database, for example:
+
+```powershell
+$env:DATABASE_URL='postgresql://user:password@localhost:5432/tempotempo_test'; Remove-Item Env:USE_SQLITE -ErrorAction Ignore
+python manage.py test orders.tests_postgres --keepdb
+```
+
+They are intentionally not treated as passing when PostgreSQL is unavailable.
+
 ## Online Presentation Deploy
 
 The project is prepared for a low-cost hosted demo with:
@@ -176,7 +220,7 @@ The project is prepared for a low-cost hosted demo with:
 - Django API and PostgreSQL on Render using `render.yaml`
 - React/Vite frontend on Vercel from the repo root or the `frontend` directory
 
-Render creates the free PostgreSQL database, installs Python dependencies, collects static files, runs migrations, and seeds the demo catalog through `build.sh`. The default API URL expected by the production frontend is:
+Render creates the PostgreSQL database, installs Python dependencies, collects static files, and runs migrations through `build.sh`. Demo seeding is opt-in: set `SEED_DEMO=true` and provide `DEMO_ADMIN_PASSWORD`; the production default does not seed data or create an admin. The default API URL expected by the production frontend is:
 
 ```text
 https://tempotempo-api.onrender.com/api
@@ -189,7 +233,10 @@ For Vercel, `vercel.json` builds the `frontend` app and sets `VITE_API_BASE_URL`
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | POST | `/api/auth/register/` | Create customer account |
-| POST | `/api/auth/login/` | Get JWT access and refresh tokens |
+| POST | `/api/auth/csrf/` | Set/read CSRF token for cookie-auth operations |
+| POST | `/api/auth/login/` | Get in-memory access JWT and set HttpOnly refresh cookie |
+| POST | `/api/auth/token/refresh/` | Rotate refresh cookie and issue a new access JWT |
+| POST | `/api/auth/logout/` | Blacklist refresh cookie and end the session |
 | GET/PATCH | `/api/auth/me/` | Read or update profile |
 | POST | `/api/auth/change-password/` | Change password |
 | GET | `/api/products/` | List products with pagination, category filter, and search |

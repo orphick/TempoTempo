@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import models as db_models, transaction
+from django.core.exceptions import ValidationError
 from django.db.models.functions import TruncMonth
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -11,6 +12,7 @@ from products.models import Product as ProductModel, ProductVariant
 from products.serializers import ProductListSerializer
 from .serializers import CartSerializer, OrderSerializer
 from .models import Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon
+from .services import change_order_status
 
 
 def parse_positive_int(value, field_name):
@@ -36,7 +38,6 @@ class CartView(APIView):
         return Response(CartSerializer(cart).data)
 
     def post(self, request):
-        cart, _ = Cart.objects.get_or_create(user=request.user)
         variant_id = request.data.get('variant_id')
         quantity, error = parse_positive_int(request.data.get('quantity', 1), 'تعداد')
         if error:
@@ -50,11 +51,16 @@ class CartView(APIView):
         if variant.stock < 1:
             return Response({'error': 'موجودی این محصول تمام شده است'}, status=400)
 
-        item, created = CartItem.objects.get_or_create(cart=cart, variant=variant)
-        if not created:
-            item.quantity = min(item.quantity + quantity, variant.stock)
-        else:
-            item.quantity = min(quantity, variant.stock)
+        cart = Cart.objects.filter(user=request.user).first()
+        item = CartItem.objects.filter(cart=cart, variant=variant).first() if cart else None
+        requested_total = quantity if item is None else item.quantity + quantity
+        if requested_total > variant.stock:
+            return Response({'error': 'تعداد درخواستی بیشتر از موجودی است'}, status=400)
+        if cart is None:
+            cart = Cart.objects.create(user=request.user)
+        if item is None:
+            item = CartItem(cart=cart, variant=variant)
+        item.quantity = requested_total
         item.save()
         return Response(CartSerializer(cart).data)
 
@@ -88,6 +94,7 @@ class CartItemView(APIView):
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'checkout'
 
     def post(self, request):
         coupon_code = request.data.get('coupon_code', '').strip().upper()
@@ -255,15 +262,15 @@ class AdminOrderListView(APIView):
         return Response(data)
 
     def patch(self, request, order_id):
-        try:
-            order = Order.objects.get(id=order_id)
-        except Order.DoesNotExist:
-            return Response({'error': 'سفارش یافت نشد'}, status=404)
         new_status = request.data.get('status')
         if new_status not in dict(Order.STATUS_CHOICES):
             return Response({'error': 'وضعیت نامعتبر'}, status=400)
-        order.status = new_status
-        order.save()
+        try:
+            order = change_order_status(order_id=order_id, new_status=new_status, acting_admin=request.user)
+        except Order.DoesNotExist:
+            return Response({'error': 'سفارش یافت نشد'}, status=404)
+        except ValidationError as exc:
+            return Response({'error': exc.messages[0]}, status=400)
         return Response({'success': True, 'status': order.status})
 
 
@@ -363,6 +370,7 @@ class ReviewView(APIView):
     
 class CouponValidateView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'coupon'
 
     def post(self, request):
         code = request.data.get('code', '').strip().upper()

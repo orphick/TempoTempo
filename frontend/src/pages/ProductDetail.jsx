@@ -22,8 +22,8 @@ const ACTIVATION_STEPS = [
   },
   {
     step: "۰۳",
-    title: "تحویل دیجیتال",
-    desc: "اطلاعات سفارش در حساب کاربری و بخش سفارش‌ها قابل پیگیری است.",
+    title: "پیگیری سفارش",
+    desc: "اطلاعات سفارش در حساب کاربری و بخش سفارش‌ها قابل پیگیری است؛ تحویل خودکار کد در این نسخه انجام نمی‌شود.",
   },
   {
     step: "۰۴",
@@ -172,7 +172,7 @@ export default function ProductDetail() {
   const metaRows = [
     { label: "پلتفرم", value: product.platform || "ثبت نشده" },
     { label: "منطقه", value: product.region || "گلوبال" },
-    { label: "نوع تحویل", value: product.delivery_type || "کد دیجیتال فوری" },
+    { label: "وضعیت ارائه", value: "ثبت سفارش و پیگیری وضعیت" },
     { label: "دسته‌بندی", value: product.category.name },
   ];
 
@@ -297,8 +297,8 @@ export default function ProductDetail() {
 
       <section className={styles.trustBand}>
         <div>
-          <strong>تحویل دیجیتال</strong>
-          <span>ثبت سفارش و پیگیری از حساب کاربری</span>
+          <strong>ثبت و پیگیری سفارش</strong>
+          <span>تحویل خودکار کد یا پرداخت آنلاین در این نسخه پیاده‌سازی نشده است</span>
         </div>
         <div>
           <strong>کنترل موجودی</strong>

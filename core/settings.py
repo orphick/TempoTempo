@@ -22,6 +22,8 @@ def env_list(name, default=''):
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-local-development-key')
 DEBUG = env_bool('DEBUG', False)
+if not DEBUG and (not SECRET_KEY or SECRET_KEY == 'django-insecure-local-development-key' or SECRET_KEY == 'change-this-in-production'):
+    raise RuntimeError('SECRET_KEY must be set to a secure, non-default value when DEBUG=False.')
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
@@ -39,6 +41,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
 
     'blog',
     'users',
@@ -55,6 +58,8 @@ if not DEBUG:
     MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
 
 MIDDLEWARE += [
+    'core.middleware.RequestIDMiddleware',
+    'core.middleware.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -147,6 +152,13 @@ STORAGES = {
     },
 }
 
+USE_OBJECT_STORAGE = env_bool('USE_OBJECT_STORAGE', False)
+if not DEBUG and not USE_OBJECT_STORAGE:
+    raise RuntimeError('USE_OBJECT_STORAGE=True is required when DEBUG=False; Render local media is not durable.')
+if USE_OBJECT_STORAGE:
+    if not os.getenv('AWS_STORAGE_BUCKET_NAME'):
+        raise RuntimeError('AWS_STORAGE_BUCKET_NAME is required when USE_OBJECT_STORAGE=True.')
+    STORAGES['default'] = {'BACKEND': 'storages.backends.s3.S3Storage'}
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 SERVE_MEDIA = env_bool('SERVE_MEDIA', DEBUG)
@@ -158,10 +170,8 @@ CORS_ALLOWED_ORIGINS = env_list(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173',
 )
-CORS_ALLOWED_ORIGIN_REGEXES = env_list(
-    'CORS_ALLOWED_ORIGIN_REGEXES',
-    r'^https://.*\.vercel\.app$',
-)
+CORS_ALLOWED_ORIGIN_REGEXES = []
+CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
@@ -173,11 +183,12 @@ if not DEBUG:
     # so this mainly protects the Django admin session.
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    # Render already redirects HTTP to HTTPS at the edge, so the Django-level
-    # redirect stays opt-in to avoid redirect loops behind the proxy.
-    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', False)
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', True)
+    SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', True)
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'None')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -189,8 +200,23 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_MINUTES', '10'))),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = ('core.throttles.ScopedUserRateThrottle',)
+REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+    'login': '10/min', 'register': '5/hour', 'refresh': '20/min',
+    'password_change': '5/hour', 'coupon': '30/hour', 'checkout': '10/hour',
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1, 'disable_existing_loggers': False,
+    'formatters': {'structured': {'format': '%(asctime)s %(levelname)s %(name)s %(message)s request_id=%(request_id)s'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'structured'}},
+    'loggers': {'core.request': {'handlers': ['console'], 'level': os.getenv('LOG_LEVEL', 'INFO'), 'propagate': False}},
+}

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from PIL import Image, ImageDraw
 
 from blog.models import BlogPost
@@ -148,7 +148,14 @@ class Command(BaseCommand):
         # Never hard-code the deployed admin password: a public repo would publish it.
         admin_password = os.getenv('DEMO_ADMIN_PASSWORD')
         if created:
-            admin.set_password(admin_password or 'admin12345')
+            if not admin_password and not settings.DEBUG:
+                admin.delete()
+                raise CommandError('DEMO_ADMIN_PASSWORD is required when DEBUG=False; no admin was created.')
+            # Local development still requires an explicitly chosen password: there is no default.
+            if not admin_password:
+                admin.delete()
+                raise CommandError('Set DEMO_ADMIN_PASSWORD before creating the demo admin.')
+            admin.set_password(admin_password)
             admin.save()
         elif admin_password:
             # Re-seeding with the variable set rotates the password on an existing deployment.

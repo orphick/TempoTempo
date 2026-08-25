@@ -2,7 +2,7 @@ from rest_framework import generics, permissions, parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSerializer
 
 User = get_user_model()
 
@@ -11,6 +11,7 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'register'
 
 
 class MeView(APIView):
@@ -30,14 +31,11 @@ class MeView(APIView):
 
 class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'password_change'
 
     def post(self, request):
-        old_password = request.data.get('old_password')
-        new_password = request.data.get('new_password')
-        if not request.user.check_password(old_password):
-            return Response({'old_password': ['رمز عبور فعلی اشتباه است.']}, status=400)
-        if len(new_password) < 8:
-            return Response({'new_password': ['رمز عبور باید حداقل ۸ کاراکتر باشد.']}, status=400)
-        request.user.set_password(new_password)
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data['new_password'])
         request.user.save()
         return Response({'success': True})

@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon
+from django.core.exceptions import ValidationError
+from .models import Cart, CartItem, Order, OrderItem, Wishlist, Review, Coupon, OrderStatusAudit
+from .services import change_order_status
 
 
 class CartItemInline(admin.TabularInline):
@@ -10,7 +12,9 @@ class CartItemInline(admin.TabularInline):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ['subtotal']
+    readonly_fields = ['variant', 'quantity', 'price', 'subtotal']
+    can_delete = False
+    max_num = 0
 
 
 @admin.register(Cart)
@@ -26,6 +30,47 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ['status', 'created_at']
     search_fields = ['user__email', 'user__username']
     inlines = [OrderItemInline]
+    readonly_fields = ['user', 'status', 'total_price', 'created_at', 'updated_at']
+    actions = ['mark_processing', 'mark_completed', 'cancel_orders']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    @admin.action(description='تغییر وضعیت به در حال پردازش')
+    def mark_processing(self, request, queryset):
+        self._transition(request, queryset, 'processing')
+
+    @admin.action(description='تغییر وضعیت به تکمیل‌شده')
+    def mark_completed(self, request, queryset):
+        self._transition(request, queryset, 'completed')
+
+    @admin.action(description='لغو سفارش و بازگرداندن موجودی')
+    def cancel_orders(self, request, queryset):
+        self._transition(request, queryset, 'cancelled')
+
+    def _transition(self, request, queryset, status):
+        for order in queryset:
+            try:
+                change_order_status(order_id=order.pk, new_status=status, acting_admin=request.user)
+            except ValidationError as exc:
+                self.message_user(request, f'سفارش {order.pk}: {exc.messages[0]}', level='error')
+
+@admin.register(OrderStatusAudit)
+class OrderStatusAuditAdmin(admin.ModelAdmin):
+    list_display = ['order', 'previous_status', 'new_status', 'acting_admin', 'created_at']
+    readonly_fields = ['order', 'previous_status', 'new_status', 'acting_admin', 'created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Wishlist)

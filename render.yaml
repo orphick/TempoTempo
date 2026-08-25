@@ -23,8 +23,26 @@ services:
       - key: DEBUG
         value: false
       - key: SERVE_MEDIA
+        value: false
+      - key: SECURE_SSL_REDIRECT
         value: true
-      - key: CORS_ALLOWED_ORIGIN_REGEXES
-        value: ^https://.*\.vercel\.app$
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: SEED_DEMO
+        value: false
+      - key: USE_OBJECT_STORAGE
+        value: true
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false
+      - key: AWS_S3_REGION_NAME
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: DEMO_ADMIN_PASSWORD
+        sync: false
       - key: WEB_CONCURRENCY
         value: 2

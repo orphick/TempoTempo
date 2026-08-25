@@ -51,6 +51,17 @@ class Order(models.Model):
         return f"Order #{self.id} — {self.user.email}"
 
 
+class OrderStatusAudit(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='status_audits')
+    previous_status = models.CharField(max_length=20, choices=Order.STATUS_CHOICES)
+    new_status = models.CharField(max_length=20, choices=Order.STATUS_CHOICES)
+    acting_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='order_status_actions')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)

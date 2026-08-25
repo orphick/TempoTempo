@@ -13,12 +13,26 @@ const API_BASE_URL =
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
 })
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+let accessToken = null
+let refreshPromise = null
+
+export const setAccessToken = (token) => { accessToken = token }
+export const clearAccessToken = () => { accessToken = null }
+
+async function csrf() {
+  const response = await axios.get(`${API_BASE_URL}/auth/csrf/`, { withCredentials: true })
+  return response.data.csrfToken
+}
+
+api.interceptors.request.use(async (config) => {
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`
+  }
+  if (['post', 'put', 'patch', 'delete'].includes(config.method)) {
+    config.headers['X-CSRFToken'] = await csrf()
   }
   return config
 })
@@ -27,21 +41,20 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
+    if (error.response?.status === 401 && !original._retry && !original.url?.includes('/auth/token/refresh/')) {
       original._retry = true
-      const refresh = localStorage.getItem('refresh_token')
-      if (refresh) {
-        try {
-          const res = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-            refresh,
-          })
-          localStorage.setItem('access_token', res.data.access)
+      try {
+        refreshPromise ||= axios.post(`${API_BASE_URL}/auth/token/refresh/`, {}, { withCredentials: true, headers: { 'X-CSRFToken': await csrf() } })
+        const res = await refreshPromise
+        setAccessToken(res.data.access)
+        if (original.headers) {
           original.headers.Authorization = `Bearer ${res.data.access}`
-          return api(original)
-        } catch {
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
         }
+        return api(original)
+      } catch {
+        clearAccessToken()
+      } finally {
+        refreshPromise = null
       }
     }
     return Promise.reject(error)

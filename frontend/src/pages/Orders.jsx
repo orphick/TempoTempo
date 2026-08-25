@@ -106,7 +106,7 @@ export default function Orders() {
         <div>
           <p className={styles.kicker}>تاریخچه سفارش</p>
           <h1>سفارش‌های من</h1>
-          <p>وضعیت خریدهای دیجیتال، آیتم‌ها و مبلغ هر سفارش را از اینجا دنبال کن.</p>
+          <p>وضعیت سفارش‌های ثبت‌شده، آیتم‌ها و مبلغ هر سفارش را از اینجا دنبال کن.</p>
         </div>
         <div className={styles.heroStats}>
           <span>
@@ -184,11 +184,11 @@ export default function Orders() {
 
               <footer className={styles.orderFooter}>
                 <div>
-                  <span>تحویل دیجیتال</span>
+                  <span>وضعیت سفارش</span>
                   <strong>
                     {order.status === "completed"
-                      ? "آماده پیگیری در حساب کاربری"
-                      : "پس از تکمیل سفارش فعال می‌شود"}
+                      ? "سفارش تکمیل شده است؛ برای دریافت با پشتیبانی هماهنگ کنید"
+                      : "در انتظار بررسی و پیگیری"}
                   </strong>
                 </div>
                 <div className={styles.total}>

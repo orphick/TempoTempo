@@ -1,29 +1,30 @@
 import { create } from "zustand";
-import api from "../api/axios";
+import api, { clearAccessToken, setAccessToken } from "../api/axios";
 
 const useAuthStore = create((set) => ({
   user: null,
-  isAuthenticated: !!localStorage.getItem("access_token"),
+  isAuthenticated: false,
 
   login: async (email, password) => {
     const res = await api.post("/auth/login/", { email, password });
-    localStorage.setItem("access_token", res.data.access);
-    localStorage.setItem("refresh_token", res.data.refresh);
+    setAccessToken(res.data.access);
     const me = await api.get("/auth/me/");
     set({ user: me.data, isAuthenticated: true });
   },
 
-  logout: () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+  logout: async () => {
+    try { await api.post("/auth/logout/"); } finally { clearAccessToken(); }
     set({ user: null, isAuthenticated: false });
   },
 
   fetchUser: async () => {
     try {
+      const refreshed = await api.post("/auth/token/refresh/");
+      setAccessToken(refreshed.data.access);
       const res = await api.get("/auth/me/");
       set({ user: res.data, isAuthenticated: true });
     } catch {
+      clearAccessToken();
       set({ user: null, isAuthenticated: false });
     }
   },
